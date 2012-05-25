@@ -27,7 +27,7 @@ def token(expr, match): #If token is expected, consume it
 	else:
 		return False
 
-def operand(expr): #Consumes an operand whether it's an expression in brackets or a variable
+def operand(expr): #Consumes an operand whether it's a subexpression in brackets or a variable
 	if (token(expr, '(')):
 		x = addsub(expr)
 		token(expr, ')')
@@ -64,12 +64,6 @@ def printPrefix(tree): #Preorder tree traversal to print expressions in prefix n
 	output = ''
 	if (tree == None):
 		return ''
-	#print '( {0} )'.format(tree.value),
-#	if (tree.value == '*' or tree.value == '/' or tree.value == '+' or tree.value == '-'):
-#		print '( {0} )'.format(tree.value),
-#	else:
-#		print tree.value,
-#	print tree.value,
 	elif (tree.value.isdigit() or tree.value.isalpha()):
 		return '{0}'.format(tree.value)
 	output += '({0} '.format(tree.value)
