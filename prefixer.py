@@ -1,12 +1,15 @@
 #! /usr/bin/env python
+#Twitch.TV Internship Challenge Problem
 #Write a program that given an infix arithmetic expression, outputs a prefix version.
 import sys
 import os
-#print 'Hello prefixer in {0}'.format(os.getcwd())
 
-f = open('{0}/{1}'.format(os.getcwd(),sys.argv[1]), 'r')
+if (len(sys.argv) == 3):
+	f = open('{0}/{1}'.format(os.getcwd(),sys.argv[2]), 'r')
+elif (len(sys.argv) == 2):
+	f = open('{0}/{1}'.format(os.getcwd(),sys.argv[1]), 'r')
 List = f.readline()
-print '\nInfix expression: {0}'.format(List)
+print 'Infix expression: {0}'.format(List)
 inExpr = List.split(' ')
 inExpr[len(inExpr)-1] = inExpr[len(inExpr)-1].strip('\n')
 inExpr.append(';')
@@ -38,6 +41,12 @@ def operand(expr): #Consumes an operand whether it's a subexpression in brackets
 			del expr[0]
 			return parseTree(operand)
 
+def operator(node): #Return true if node is an operator
+	if (node == '*' or node == '/' or node == '+' or node == '-'):
+		return True
+	else:
+		return False
+	
 def addsub(expr): #Sum/diff can be product on left, sum/diff on right or just a product
 	l = muldiv(expr)
 	if (token(expr, '+')):
@@ -60,18 +69,56 @@ def muldiv(expr): #Builds an expression of products and quotients
 	else:
 		return l
 
+def simplifyTree(tree): #Reduces expressions as much as possible by traversing tree
+	if (tree == None):
+		return ''
+	if (tree.left != None and operator(tree.left.value)):
+                tree.left = simplifyTree(tree.left)
+        if (tree.right != None and operator(tree.right.value)):
+                tree.right = simplifyTree(tree.right) 
+	if (tree.left != None and tree.right != None and str(tree.left.value).isdigit() and str(tree.right.value).isdigit()):
+		if (tree.value == '*'):
+			tree.value = int(tree.left.value) * int(tree.right.value)
+		elif (tree.value == '/'):
+			tree.value = int(tree.left.value) / int(tree.right.value)
+		elif (tree.value == '+'):
+			tree.value = int(tree.left.value) + int(tree.right.value)                      
+       		elif (tree.value == '-'):
+			tree.value = int(tree.left.value) - int(tree.right.value)
+	    	tree.left = None
+               	tree.right = None
+	return tree
+		
 def printPrefix(tree): #Preorder tree traversal to print expressions in prefix notation
 	output = ''
 	if (tree == None):
 		return ''
-	elif (tree.value.isdigit() or tree.value.isalpha()):
+	elif (str(tree.value).isdigit() or str(tree.value).isalpha()):
 		return '{0}'.format(tree.value)
 	output += '({0} '.format(tree.value)
 	output += '{0} '.format(printPrefix(tree.left))
 	output += '{0})'.format(printPrefix(tree.right))
 	return output
 
+def printRaw(tree): #Prints prefix expression with no brackets
+	outRaw = ''
+	if (tree == None):
+                return ''
+	outRaw += ('{0} ').format(tree.value)
+	outRaw += ('{0}').format(printRaw(tree.left))
+	outRaw += ('{0}').format(printRaw(tree.right))
+	return outRaw
+
 preExpr = addsub(inExpr)
-print 'Prefix expression:',
-print printPrefix(preExpr)
-print '\n'
+
+#print 'Raw prefix expression:',
+#print printRaw(preExpr)
+
+if (len(sys.argv) == 3):
+	print 'Simplified prefix expression:',
+	print printPrefix(simplifyTree(preExpr))
+	print
+else:
+	print 'Prefix expression:',
+	print printPrefix(preExpr)
+	print
